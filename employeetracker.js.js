@@ -11,7 +11,7 @@ var connection = mysql.createConnection({
 
 connection.connect(function (err, res) {
   if (err) throw err;
-  employeeinq());
+  employeeinq();
 });
 
 function employeeinq() {
@@ -25,30 +25,30 @@ function employeeinq() {
         "View All Employees by department",
         "Add Employee",
         "Remove Employee",
-        "Update Employee Manager"
-      ]
+        "Update Employee Manager",
+      ],
     })
-    .then(function(answer) {
+    .then(function (answer) {
       switch (answer.action) {
-      case "View All Employees":
-       employeeSearch();
-        break;
+        case "View All Employees":
+          employeeSearch();
+          break;
 
-      case "View All Employees by department":
-        departmentSearch();
-        break;
+        case "View All Employees by department":
+          departmentSearch();
+          break;
 
-      case "Add Employee":
-        addEmployee();
-        break;
+        case "Add Employee":
+          addEmployee();
+          break;
 
-      case "Remove Employee":
-        removeEmployee();
-        break;
+        case "Remove Employee":
+          removeEmployee();
+          break;
 
-      case "Update Employee Manager":
-        employeeManager();
-        break;
+        case "Update Employee Manager":
+          employeeManager();
+          break;
       }
     });
 }
