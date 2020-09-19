@@ -1,19 +1,31 @@
-DROP DATABASE IF EXISTS top_songsDB;
-CREATE database top_songsDB;
+DROP DATABASE IF EXISTS employee_tracker;
+CREATE database employee_tracker;
 
-USE top_songsDB;
+USE employee_tracker;
 
-CREATE TABLE top5000 (
-  position INT NOT NULL,
-  artist VARCHAR(100) NULL,
-  song VARCHAR(100) NULL,
-  year INT NULL,
-  raw_total DECIMAL(10,4) NULL,
-  raw_usa DECIMAL(10,4) NULL,
-  raw_uk DECIMAL(10,4) NULL,
-  raw_eur DECIMAL(10,4) NULL,
-  raw_row DECIMAL(10,4) NULL,
-  PRIMARY KEY (position)
+CREATE TABLE department (
+  id INT AUTO_INCREMENT NOT NULL,
+  name VARCHAR(30) NULL,
+  PRIMARY KEY (id)
 );
 
-SELECT * FROM top5000;
+CREATE TABLE role (
+  id INT AUTO_INCREMENT NOT NULL,
+  title VARCHAR(100) NOT NULL,
+  salary DECIMAL(100) NOT NULL,
+  department_id VARCHAR(100) NOT NULL,
+  PRIMARY KEY (id)
+);
+
+CREATE TABLE employee (
+  id INT AUTO_INCREMENT NOT NULL,
+  first_name VARCHAR(100) NOT NULL,
+  last_name VARCHAR(100) NOT NULL,
+  role_id VARCHAR(100) NOT NULL,
+  manager_id VARCHAR(100) NOT NULL,
+  PRIMARY KEY (id)
+);
+
+SELECT * FROM department;
+select * from role;
+select * from employee;
