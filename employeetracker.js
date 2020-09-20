@@ -33,13 +33,13 @@ function employeeinq() {
       switch (answer.action) {
         case "View All Employees":
           employeeSearch();
-           break;
+          break;
         // case "View All Employees by department":
         //   departmentSearch();
         //   break;
-         case "Add Employee":
-           addEmployee();
-           break;
+        case "Add Employee":
+          addEmployee();
+          break;
         // case "Remove Employee":
         //   removeEmployee();
         //   break;
@@ -50,7 +50,9 @@ function employeeinq() {
     });
 }
 
-//ask how to use console table
+//ask how to use console tables
+//ask how to join tables
+//=================================
 function employeeSearch() {
   connection.query("SELECT * FROM employee", function (err, res) {
     if (err) throw err;
@@ -72,4 +74,92 @@ function employeeSearch() {
 
 //function departmentSearch()
 
-function addEmployee()
+function addEmployee() {
+  inquirer
+    .prompt([
+      {
+        type: "input",
+        name: "firstname",
+        message: "What is the employee's First Name?",
+      },
+      {
+        type: "input",
+        name: "lastname",
+        message: "What is the employee's Last Name?",
+      },
+      {
+        type: "input",
+        name: "role",
+        message: "What is the employee's role?",
+      },
+      {
+        type: "input",
+        name: "manager",
+        message: "What is the employee's Manager",
+      },
+    ])
+    .then((answers) => {
+      console.log(answers.firstname);
+      console.log(answers.lastname);
+      console.log(answers.role);
+      console.log(answers.manager);
+    });
+}
+// console.log("Inserting a new product...\n");
+// var query = connection.query(
+//   "INSERT INTO products SET ?",
+//   {
+//     flavor: "Rocky Road",
+//     price: 3.0,
+//     quantity: 50,
+//   },
+//   function (err, res) {
+//     if (err) throw err;
+//     console.log(res.affectedRows + " product inserted!\n");
+//     // Call updateProduct AFTER the INSERT completes
+//     updateProduct();
+//   }
+// );
+
+// logs the actual query being run
+// console.log(query.sql);
+
+// function removeEmployee() {
+//   console.log("Deleting all strawberry icecream...\n");
+//   connection.query(
+//     "DELETE FROM products WHERE ?",
+//     {
+//       flavor: "strawberry"
+//     },
+//     function(err, res) {
+//       if (err) throw err;
+//       console.log(res.affectedRows + " products deleted!\n");
+//       // Call readProducts AFTER the DELETE completes
+//       readProducts();
+//     }
+//   );
+// }
+
+// function employeeManager() {
+//   console.log("Updating all Rocky Road quantities...\n");
+//   var query = connection.query(
+//     "UPDATE products SET ? WHERE ?",
+//     [
+//       {
+//         quantity: 100
+//       },
+//       {
+//         flavor: "Rocky Road"
+//       }
+//     ],
+//     function(err, res) {
+//       if (err) throw err;
+//       console.log(res.affectedRows + " products updated!\n");
+//       // Call deleteProduct AFTER the UPDATE completes
+//       deleteProduct();
+//     }
+//   );
+
+//   // logs the actual query being run
+//   console.log(query.sql);
+// }
