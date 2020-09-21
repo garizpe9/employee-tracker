@@ -34,15 +34,16 @@ function employeeinq() {
         case "View All Employees":
           employeeSearch();
           break;
+
         // case "View All Employees by department":
         //   departmentSearch();
         //   break;
         case "Add Employee":
           addEmployee();
           break;
-        // case "Remove Employee":
-        //   removeEmployee();
-        //   break;
+        case "Remove Employee":
+          removeEmployee();
+          break;
         // case "Update Employee Manager":
         //   employeeManager();
         //   break;
@@ -51,6 +52,7 @@ function employeeinq() {
 }
 
 //ask how to use foreign keys
+//ask how to remove duplicate values in array
 
 //View all Employees
 //=================================
@@ -116,24 +118,34 @@ function addEmployee() {
       });
   });
 }
-//   },
-//   function (err, res)
-//     if (err) throw err;
-//     console.log(res.affectedRows + " product inserted!\n");
-//     // Call updateProduct AFTER the INSERT completes
-//     updateProduct();
-//   }
-// );
-
-// logs the actual query being run
-// console.log(query.sql);
 
 //Remove Employee
 //=======================
-// function removeEmployee() {
-//   console.log("Deleting all strawberry icecream...\n");
-//   connection.query(
-//     "DELETE FROM products WHERE ?",
+function removeEmployee() {
+  connection.query("SELECT * FROM department", function (err, results) {
+    if (err) throw err;
+    inquirer
+      .prompt([
+        {
+          name: "employee",
+          type: "rawlist",
+          choices: function () {
+            var choiceArray = [];
+            for (var i = 0; i < results.length; i++) {
+              choiceArray.push(results[i].name);
+            }
+            return choiceArray;
+          },
+          message: "Select Employee to remove",
+        },
+      ])
+      .then((answer) => {
+        console.log("good job");
+      });
+  });
+}
+
+//connection.query( "DELETE FROM employee WHERE ?",
 //     {
 //       flavor: "strawberry"
 //     },
