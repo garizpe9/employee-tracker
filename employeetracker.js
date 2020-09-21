@@ -1,6 +1,6 @@
 const mysql = require("mysql");
 const inquirer = require("inquirer");
-const cTable = require("console.table");
+const consoleTable = require("console.table");
 
 var connection = mysql.createConnection({
   host: "localhost",
@@ -50,30 +50,22 @@ function employeeinq() {
     });
 }
 
-//ask how to use console tables
-//ask how to join tables
+//ask how to use foreign keys
 //=================================
 function employeeSearch() {
-  connection.query("SELECT * FROM employee", function (err, res) {
-    if (err) throw err;
-
-    for (var i = 0; i < res.length; i++) {
-      console.table(
-        res[i].id +
-          " | " +
-          res[i].first_name +
-          " | " +
-          res[i].role_id +
-          " | " +
-          res[i].manager_id
-      );
+  connection.query(
+    "SELECT * FROM employee Left Join role on employee.id=role.id",
+    function (err, res) {
+      if (err) throw err;
+      console.table(res);
     }
-    console.log("-----------------------------------");
-  });
+  );
 }
 
 //function departmentSearch()
 
+//add Employee
+//======================
 function addEmployee() {
   inquirer
     .prompt([
@@ -99,19 +91,14 @@ function addEmployee() {
       },
     ])
     .then((answers) => {
-      console.log(answers.firstname);
-      console.log(answers.lastname);
-      console.log(answers.role);
-      console.log(answers.manager);
+      console.table(answers);
     });
 }
 // console.log("Inserting a new product...\n");
 // var query = connection.query(
-//   "INSERT INTO products SET ?",
+//   "INSERT INTO employee SET ?",
 //   {
-//     flavor: "Rocky Road",
-//     price: 3.0,
-//     quantity: 50,
+
 //   },
 //   function (err, res) {
 //     if (err) throw err;
