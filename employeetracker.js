@@ -71,42 +71,53 @@ function employeeSearch() {
 //Add Employee
 //======================
 function addEmployee() {
-  inquirer
-    .prompt([
-      {
-        type: "input",
-        name: "firstname",
-        message: "What is the employee's First Name?",
-      },
-      {
-        type: "input",
-        name: "lastname",
-        message: "What is the employee's Last Name?",
-      },
-      {
-        type: "input",
-        name: "role",
-        message: "What is the employee's role?",
-      },
-      {
-        type: "input",
-        name: "manager",
-        message: "Who is the employee's Manager",
-      },
-    ])
-    .then((answer) => {
-      console.log("Adding Employee...\n");
-      connection.query("INSERT INTO employee SET?", {
-        first_name: answer.firstname,
-        last_name: answer.lastname,
-        role_id: answer.role,
-        manager_id: answer.manager,
+  connection.query("SELECT * FROM employee", function (err, results) {
+    if (err) throw err;
+    inquirer
+      .prompt([
+        {
+          type: "input",
+          name: "firstname",
+          message: "What is the employee's First Name?",
+        },
+        {
+          type: "input",
+          name: "lastname",
+          message: "What is the employee's Last Name?",
+        },
+        {
+          type: "input",
+          name: "role",
+          message: "What is the employee's role?",
+        },
+        {
+          name: "manager",
+          type: "rawlist",
+          choices: function () {
+            var choiceArray = [];
+            for (var i = 0; i < results.length; i++) {
+              if (results[i].manager_id !== null) {
+                choiceArray.push(results[i].manager_id);
+              }
+            }
+            return choiceArray;
+          },
+          message: "Who is the employee's Manager",
+        },
+      ])
+      .then((answer) => {
+        console.log("Adding Employee...\n");
+        connection.query("INSERT INTO employee SET?", {
+          first_name: answer.firstname,
+          last_name: answer.lastname,
+          role_id: answer.role,
+          manager_id: answer.manager,
+        });
       });
-    });
+  });
 }
-
 //   },
-//   function (err, res) {
+//   function (err, res)
 //     if (err) throw err;
 //     console.log(res.affectedRows + " product inserted!\n");
 //     // Call updateProduct AFTER the INSERT completes
