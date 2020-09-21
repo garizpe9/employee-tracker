@@ -51,6 +51,8 @@ function employeeinq() {
 }
 
 //ask how to use foreign keys
+
+//View all Employees
 //=================================
 function employeeSearch() {
   connection.query(
@@ -62,9 +64,11 @@ function employeeSearch() {
   );
 }
 
+//View all Employees by Department
+//=================================
 //function departmentSearch()
 
-//add Employee
+//Add Employee
 //======================
 function addEmployee() {
   inquirer
@@ -87,17 +91,19 @@ function addEmployee() {
       {
         type: "input",
         name: "manager",
-        message: "What is the employee's Manager",
+        message: "Who is the employee's Manager",
       },
     ])
-    .then((answers) => {
-      console.table(answers);
+    .then((answer) => {
+      console.log("Adding Employee...\n");
+      connection.query("INSERT INTO employee SET?", {
+        first_name: answer.firstname,
+        last_name: answer.lastname,
+        role_id: answer.role,
+        manager_id: answer.manager,
+      });
     });
 }
-// console.log("Inserting a new product...\n");
-// var query = connection.query(
-//   "INSERT INTO employee SET ?",
-//   {
 
 //   },
 //   function (err, res) {
@@ -111,6 +117,8 @@ function addEmployee() {
 // logs the actual query being run
 // console.log(query.sql);
 
+//Remove Employee
+//=======================
 // function removeEmployee() {
 //   console.log("Deleting all strawberry icecream...\n");
 //   connection.query(
@@ -127,10 +135,12 @@ function addEmployee() {
 //   );
 // }
 
+//Update Manager
+//===============================
 // function employeeManager() {
 //   console.log("Updating all Rocky Road quantities...\n");
 //   var query = connection.query(
-//     "UPDATE products SET ? WHERE ?",
+//     "UPDATE `employee_tracker`.`employee` SET `manager_id` = 'potatoman' WHERE (`id` = '8');",
 //     [
 //       {
 //         quantity: 100
