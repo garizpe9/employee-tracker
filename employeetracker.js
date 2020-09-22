@@ -34,27 +34,26 @@ function employeeinq() {
         case "View All Employees":
           employeeSearch();
           break;
-
-        // case "View All Employees by department":
-        //   departmentSearch();
-        //   break;
+        case "View All Employees by department":
+          departmentSearch();
+          break;
         case "Add Employee":
           addEmployee();
           break;
         case "Remove Employee":
           removeEmployee();
           break;
-        // case "Update Employee Manager":
-        //   employeeManager();
-        //   break;
+        case "Update Employee Manager":
+          employeeManager();
+          break;
       }
     });
 }
-
-//ask how to use foreign keys
-//ask how to remove duplicate values in array
-
 //View all Employees
+//===============================
+//ISSUES: HOW TO USE FOREIGN KEYS
+//HOW TO REMOVE DUPLICATE VALUES
+//HOW TO DELETE INFORMATION IN MULTIPLE TABLES (FOREIGN KEYS RELATED?)
 //=================================
 function employeeSearch() {
   connection.query(
@@ -66,9 +65,17 @@ function employeeSearch() {
   );
 }
 
-//View all Employees by Department
+//View all Employees by Department (Query needs to be fixed foreign key issue?)
 //=================================
-//function departmentSearch()
+function departmentSearch() {
+  connection.query(
+    "SELECT * FROM employee Left Join role on employee.id=role.id",
+    function (err, res) {
+      if (err) throw err;
+      console.table(res);
+    }
+  );
+}
 
 //Add Employee
 //======================
@@ -140,7 +147,12 @@ function removeEmployee() {
         },
       ])
       .then((answer) => {
-        console.log("good job");
+        var query =
+          "SELECT top_albums.year, top_albums.album, top_albums.position, top5000.song, top5000.artist ";
+        query +=
+          "FROM top_albums INNER JOIN top5000 ON (top_albums.artist = top5000.artist AND top_albums.year ";
+        query += "= top5000.year) WHERE ?"; // (top_albums.artist = ? AND top5000.artist = ?) ORDER BY top_albums.year, top_albums.position";
+        //connection.query(answer) {};
       });
   });
 }
@@ -160,8 +172,52 @@ function removeEmployee() {
 
 //Update Manager
 //===============================
-// function employeeManager() {
-//   console.log("Updating all Rocky Road quantities...\n");
+function employeeManager() {
+  connection.query(
+    "SELECT * FROM employee Left Join role on employee.id=role.id",
+    function (err, results) {
+      if (err) throw err;
+      inquirer
+        .prompt([
+          {
+            name: "employeeUpdate",
+            type: "rawlist",
+            choices: function () {
+              var choiceArray = [];
+              for (var i = 0; i < results.length; i++) {
+                if (results[i].name !== null) {
+                  choiceArray.push(
+                    results[i].first_name + " " + results[i].last_name
+                  );
+                }
+              }
+              return choiceArray;
+            },
+            message: "Select Employee",
+          },
+          {
+            name: "managerUpdate",
+            type: "rawlist",
+            choices: function () {
+              var choiceArray = [];
+              for (var i = 0; i < results.length; i++) {
+                if (results[i].manager_id !== null) {
+                  choiceArray.push(results[i].manager_id);
+                }
+              }
+              return choiceArray;
+            },
+            message: "Select Manager",
+          },
+        ])
+        .then((answer) => {
+          console.log("Adding Employee...\n");
+        });
+    }
+  );
+}
+
+//
 //   var query = connection.query(
 //     "UPDATE `employee_tracker`.`employee` SET `manager_id` = 'potatoman' WHERE (`id` = '8');",
 //     [
@@ -182,4 +238,3 @@ function removeEmployee() {
 
 //   // logs the actual query being run
 //   console.log(query.sql);
-// }
