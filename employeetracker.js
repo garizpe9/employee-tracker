@@ -51,9 +51,7 @@ function employeeinq() {
 }
 //View all Employees
 //===============================
-//ISSUES: HOW TO USE FOREIGN KEYS
 //HOW TO REMOVE DUPLICATE VALUES
-//HOW TO DELETE INFORMATION IN MULTIPLE TABLES (FOREIGN KEYS RELATED?)
 //=================================
 function employeeSearch() {
   connection.query(
@@ -97,7 +95,7 @@ function departmentSearch() {
 //Add Employee
 //======================
 function addEmployee() {
-  connection.query("SELECT * FROM employee", function (err, results) {
+  connection.query(`SELECT * from role`, function (err, results) {
     if (err) throw err;
     inquirer
       .prompt([
@@ -112,13 +110,13 @@ function addEmployee() {
           message: "What is the employee's Last Name?",
         },
         {
-          type: "input",
+          type: "rawlist",
           name: "role",
           choices: function () {
             var choiceArray = [];
             for (var i = 0; i < results.length; i++) {
-              if (results[i].manager_id !== null) {
-                choiceArray.push(results[i].manager_id);
+              if (results[i].title !== null) {
+                choiceArray.push(results[i].title);
               }
             }
             return choiceArray;
@@ -129,13 +127,19 @@ function addEmployee() {
           name: "manager",
           type: "rawlist",
           choices: function () {
+            //connection.query(
+            //`SELECT TITLE FROM employee_tracker.role;`,
+            //function (err, results) {
+            //if (err) throw err;
             var choiceArray = [];
             for (var i = 0; i < results.length; i++) {
-              if (results[i].manager_id !== null) {
-                choiceArray.push(results[i].manager_id);
+              if (results[i].title !== null) {
+                choiceArray.push(results[i].title);
               }
             }
             return choiceArray;
+            //}
+            //);
           },
           message: "Who is the employee's Manager",
         },

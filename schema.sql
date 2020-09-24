@@ -31,6 +31,8 @@ CREATE TABLE department
     (id)
   ON
     DELETE CASCADE
+    ON
+    UPDATE CASCADE
 );
 
     CREATE TABLE employee
@@ -57,6 +59,8 @@ CREATE TABLE department
       (id)
   ON
       DELETE CASCADE
+  ON
+      UPDATE CASCADE
 );
 
       SELECT *
