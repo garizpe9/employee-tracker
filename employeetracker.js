@@ -95,65 +95,70 @@ function departmentSearch() {
 //Add Employee
 //======================
 function addEmployee() {
-  connection.query(`SELECT * from role`, function (err, results) {
-    if (err) throw err;
-    inquirer
-      .prompt([
-        {
-          type: "input",
-          name: "firstname",
-          message: "What is the employee's First Name?",
-        },
-        {
-          type: "input",
-          name: "lastname",
-          message: "What is the employee's Last Name?",
-        },
-        {
-          type: "rawlist",
-          name: "role",
-          choices: function () {
-            var choiceArray = [];
-            for (var i = 0; i < results.length; i++) {
-              if (results[i].title !== null) {
-                choiceArray.push(results[i].title);
-              }
-            }
-            return choiceArray;
+  connection.query(
+    `SELECT department.name AS department, employee.first_name, employee.last_name, role.title, role.salary, CONCAT(manager.first_name, " ",manager.last_name) AS manager
+  FROM employee_tracker.employee
+  LEFT JOIN role
+  ON employee.role_id=role.id
+  LEFT JOIN department
+  ON role.department_id=department.id 
+  LEFT JOIN employee manager  
+  ON employee.manager_id=manager.id
+  ORDER BY department.name`,
+    function (err, results) {
+      if (err) throw err;
+      inquirer
+        .prompt([
+          {
+            type: "input",
+            name: "firstname",
+            message: "What is the employee's First Name?",
           },
-          message: "What is the employee's role?",
-        },
-        {
-          name: "manager",
-          type: "rawlist",
-          choices: function () {
-            //connection.query(
-            //`SELECT TITLE FROM employee_tracker.role;`,
-            //function (err, results) {
-            //if (err) throw err;
-            var choiceArray = [];
-            for (var i = 0; i < results.length; i++) {
-              if (results[i].title !== null) {
-                choiceArray.push(results[i].title);
-              }
-            }
-            return choiceArray;
-            //}
-            //);
+          {
+            type: "input",
+            name: "lastname",
+            message: "What is the employee's Last Name?",
           },
-          message: "Who is the employee's Manager",
-        },
-      ])
-      .then((answer) => {
-        console.log("Adding Employee...\n");
-        connection.query("INSERT INTO employee SET?", {
-          first_name: answer.firstname,
-          last_name: answer.lastname,
-          role_id: answer.role,
-          manager_id: answer.manager,
+          {
+            type: "rawlist",
+            name: "role",
+            choices: function () {
+              var choiceArray = [];
+              for (var i = 0; i < results.length; i++) {
+                if (results[i].title !== null) {
+                  choiceArray.push(results[i].title);
+                }
+              }
+              return choiceArray;
+            },
+            message: "What is the employee's role?",
+          },
+          {
+            name: "manager",
+            type: "rawlist",
+            choices: function () {
+              var choiceArray = [];
+              for (var i = 0; i < results.length; i++) {
+                if (results[i].manager !== null) {
+                  choiceArray.push(results[i].manager);
+                }
+              }
+              return choiceArray;
+            },
+            message: "Who is the employee's Manager",
+          },
+        ])
+        .then((answer) => {
+          console.log("Adding Employee...\n");
+          connection.query("INSERT INTO employee SET?", {
+            first_name: answer.firstname,
+            last_name: answer.lastname,
+            role_id: answer.role,
+            manager_id: answer.manager,
+          });
         });
-      });
-  });
+    }
+  );
 }
 
 //Remove Employee
@@ -185,6 +190,7 @@ function removeEmployee() {
         //connection.query(answer) {};
       });
   });
+  employeeinq();
 }
 
 //connection.query( "DELETE FROM employee WHERE ?",
