@@ -57,10 +57,18 @@ function employeeinq() {
 //=================================
 function employeeSearch() {
   connection.query(
-    "SELECT * FROM employee Left Join role on employee.id=role.id",
+    `SELECT employee.first_name, employee.last_name, role.title, department.name AS department, role.salary, CONCAT(manager.first_name, " ",manager.last_name) AS manager
+    FROM employee_tracker.employee
+    LEFT JOIN role
+    ON employee.role_id=role.id
+    LEFT JOIN department
+    ON role.department_id=department.id 
+    LEFT JOIN employee manager  
+    ON employee.manager_id=manager.id`,
     function (err, res) {
       if (err) throw err;
       console.table(res);
+      employeeinq();
     }
   );
 }
@@ -69,10 +77,19 @@ function employeeSearch() {
 //=================================
 function departmentSearch() {
   connection.query(
-    "SELECT * FROM employee Left Join role on employee.id=role.id",
+    `SELECT department.name AS department, employee.first_name, employee.last_name, role.title, role.salary, CONCAT(manager.first_name, " ",manager.last_name) AS manager
+    FROM employee_tracker.employee
+    LEFT JOIN role
+    ON employee.role_id=role.id
+    LEFT JOIN department
+    ON role.department_id=department.id 
+    LEFT JOIN employee manager  
+    ON employee.manager_id=manager.id
+    ORDER BY department.name`,
     function (err, res) {
       if (err) throw err;
       console.table(res);
+      employeeinq();
     }
   );
 }
@@ -97,6 +114,15 @@ function addEmployee() {
         {
           type: "input",
           name: "role",
+          choices: function () {
+            var choiceArray = [];
+            for (var i = 0; i < results.length; i++) {
+              if (results[i].manager_id !== null) {
+                choiceArray.push(results[i].manager_id);
+              }
+            }
+            return choiceArray;
+          },
           message: "What is the employee's role?",
         },
         {
