@@ -6,7 +6,7 @@
 // Functional application.
 // GitHub repository with a unique name and a README describing the project.
 // The command-line application should allow users to:
-// Add departments, roles, employees
+// Add roles, employees
 // View departments, roles, employees
 // Update employee roles
 // Bonus
@@ -87,25 +87,78 @@ function employeeinq() {
 //Add Departments
 //=================================
 function addDepartment() {
-  connection
-    .query(`SELECT * FROM employee_tracker.department`, function (
-      err,
-      results
-    ) {
-      if (err) throw err;
-      inquirer.prompt([
+  connection.query(`SELECT * FROM employee_tracker.department`, function (
+    err,
+    results
+  ) {
+    if (err) throw err;
+    inquirer
+      .prompt([
         {
           type: "input",
           name: "addDept",
           message: "Enter Department Name",
         },
-      ]);
-    })
-    .then((answer) => {
-      connection.query("INSERT INTO role SET?", {
-        name: answer.name,
+      ])
+      .then((answer) => {
+        connection.query("INSERT INTO department SET?", {
+          name: answer.addDept,
+        });
       });
-    });
+  });
+  employeeinq();
+}
+
+//Add Role
+//=================================
+function addRole() {
+  connection.query(
+    `SELECT * FROM employee_tracker.role
+    LEFT JOIN department
+    ON role.department_id=department.id`,
+    function (err, results) {
+      if (err) throw err;
+      inquirer
+        .prompt([
+          {
+            type: "input",
+            name: "addrole",
+            message: "Enter Role Title",
+          },
+          {
+            type: "input",
+            name: "salary",
+            message: "Enter Salary Amount",
+          },
+          {
+            type: "list",
+            name: "departmentid",
+            choices: function () {
+              var choiceArray = [];
+              for (var i = 0; i < results.length; i++) {
+                if (results[i].department_id !== null) {
+                  choiceArray.push(
+                    results[i].department_id + "." + " " + results[i].name
+                  );
+                }
+              }
+              return choiceArray;
+            },
+            message: "Roles' Department?",
+          },
+        ])
+        .then((answer) => {
+          var dept = answer.departmentid;
+          var splitdept = dept.split("");
+          connection.query("INSERT INTO role SET?", {
+            title: answer.addrole,
+            salary: answer.salary,
+            department_id: splitdept[0],
+          });
+        });
+    }
+  );
+  employeeinq();
 }
 
 //View all Employees
@@ -123,9 +176,9 @@ function employeeSearch() {
     function (err, res) {
       if (err) throw err;
       console.table(res);
-      employeeinq();
     }
   );
+  employeeinq();
 }
 //View all Employees by Department
 //=================================
@@ -331,9 +384,9 @@ function employeeManager() {
 //         flavor: "Rocky Road"
 //       }
 //     ],
-//     function(err, res) {
-//       if (err) throw err;
-//       console.log(res.affectedRows + " products updated!\n");
+// function(err, res) {
+//   if (err) throw err;
+//   console.log(res.affectedRows + " products updated!\n");
 //       // Call deleteProduct AFTER the UPDATE completes
 //       deleteProduct();
 //     }
