@@ -1,3 +1,21 @@
+//SEE FUNCTION NOTES FOR QUESTIONS ON ENTERING INFORMATION FROM FK & DUPLICATE VALUE REMOVAL
+//ENSURE ALL FUNCTIONS HAVE EMPLOYEEINQ
+//UPDATE EMPLOYEEINQ TO HAVE AN EXIT FEATURE
+
+// Minimum Requirements
+// Functional application.
+// GitHub repository with a unique name and a README describing the project.
+// The command-line application should allow users to:
+// Add departments, roles, employees
+// View departments, roles, employees
+// Update employee roles
+// Bonus
+// The command-line application should allow users to:
+// Update employee managers
+// View employees by manager
+// Delete departments, roles, and employees
+// View the total utilized budget of a department -- ie the combined salaries of all employees in that department
+
 const mysql = require("mysql");
 const inquirer = require("inquirer");
 const consoleTable = require("console.table");
@@ -22,15 +40,31 @@ function employeeinq() {
       type: "rawlist",
       message: "What would you like to do?",
       choices: [
-        "View All Employees", //from employee table and join?
-        "View All Employees by department", //from department tracker?
-        "Add Employee", //use add functionality
-        "Remove Employee", //use remove functioanlity
-        "Update Employee Manager", //update role table
+        "Add a Department",
+        "Add a Role",
+        "View Departments",
+        "View Roles",
+        "View All Employees",
+        "View All Employees by department",
+        "Add Employee",
+        "Remove Employee",
+        "Update Employee Manager",
       ],
     })
     .then(function (answer) {
       switch (answer.action) {
+        case "Add a Department":
+          addDepartment();
+          break;
+        case "Add a Role":
+          addRole();
+          break;
+        case "View Departments":
+          viewDepartments();
+          break;
+        case "View Roles":
+          viewRoles();
+          break;
         case "View All Employees":
           employeeSearch();
           break;
@@ -49,9 +83,32 @@ function employeeinq() {
       }
     });
 }
+
+//Add Departments
+//=================================
+function addDepartment() {
+  connection
+    .query(`SELECT * FROM employee_tracker.department`, function (
+      err,
+      results
+    ) {
+      if (err) throw err;
+      inquirer.prompt([
+        {
+          type: "input",
+          name: "addDept",
+          message: "Enter Department Name",
+        },
+      ]);
+    })
+    .then((answer) => {
+      connection.query("INSERT INTO role SET?", {
+        name: answer.name,
+      });
+    });
+}
+
 //View all Employees
-//===============================
-//HOW TO REMOVE DUPLICATE VALUES
 //=================================
 function employeeSearch() {
   connection.query(
@@ -70,8 +127,7 @@ function employeeSearch() {
     }
   );
 }
-
-//View all Employees by Department (Query needs to be fixed foreign key issue?)
+//View all Employees by Department
 //=================================
 function departmentSearch() {
   connection.query(
@@ -91,20 +147,21 @@ function departmentSearch() {
     }
   );
 }
-
-//Add Employee
+//Add Employee //HOW TO REMOVE DUPLICATE VALUES ?
 //======================
 function addEmployee() {
+  var managerchoiceArray = [];
+  var managerchoiceid = [];
   connection.query(
-    `SELECT department.name AS department, employee.first_name, employee.last_name, role.title, role.salary, CONCAT(manager.first_name, " ",manager.last_name) AS manager
-  FROM employee_tracker.employee
-  LEFT JOIN role
-  ON employee.role_id=role.id
-  LEFT JOIN department
-  ON role.department_id=department.id 
-  LEFT JOIN employee manager  
-  ON employee.manager_id=manager.id
-  ORDER BY department.name`,
+    `SELECT department.name AS department, employee.first_name, employee.last_name, role.title, role.salary,  manager.id, CONCAT(manager.first_name, " ",manager.last_name) AS manager
+    FROM employee_tracker.employee
+    LEFT JOIN role
+    ON employee.role_id=role.id
+    LEFT JOIN department
+    ON role.department_id=department.id 
+    LEFT JOIN employee manager  
+    ON employee.manager_id=manager.id
+    ORDER BY department.name`,
     function (err, results) {
       if (err) throw err;
       inquirer
@@ -137,34 +194,38 @@ function addEmployee() {
             name: "manager",
             type: "rawlist",
             choices: function () {
-              var choiceArray = [];
               for (var i = 0; i < results.length; i++) {
-                if (results[i].manager !== null) {
-                  choiceArray.push(results[i].manager);
+                if (results[i].id !== null) {
+                  managerchoiceArray.push(results[i].manager);
                 }
               }
-              return choiceArray;
+              return managerchoiceArray;
             },
-            message: "Who is the employee's Manager",
+            message: "What is the employee's manager?",
           },
         ])
         .then((answer) => {
           console.log("Adding Employee...\n");
-          connection.query("INSERT INTO employee SET?", {
-            first_name: answer.firstname,
-            last_name: answer.lastname,
-            role_id: answer.role,
-            manager_id: answer.manager,
-          });
+          var manageranswer = answer.manager;
+          var splitmanager = manageranswer.split(" ");
+          console.log(splitmanager);
+          // connection.query("INSERT INTO employee SET?", {
+          //   first_name: answer.firstname,
+          //   last_name: answer.lastname,
+          //   role_id: answer.role,
+          //   manager_id:
+          //     managerchoiceid[managerchoiceArray.indexof(answer.manager)], ///this cannot be right since it is using an id for employee how to pull?
+          //  connection.query() , {
+
+          //});
         });
     }
   );
 }
-
 //Remove Employee
 //=======================
 function removeEmployee() {
-  connection.query("SELECT * FROM department", function (err, results) {
+  connection.query("SELECT * FROM employee", function (err, results) {
     if (err) throw err;
     inquirer
       .prompt([
@@ -174,28 +235,26 @@ function removeEmployee() {
           choices: function () {
             var choiceArray = [];
             for (var i = 0; i < results.length; i++) {
-              choiceArray.push(results[i].name);
+              choiceArray.push(
+                results[i].first_name + " " + results[i].last_name
+              );
             }
             return choiceArray;
           },
           message: "Select Employee to remove",
         },
       ])
-      .then((answer) => {
-        var query =
-          "SELECT top_albums.year, top_albums.album, top_albums.position, top5000.song, top5000.artist ";
-        query +=
-          "FROM top_albums INNER JOIN top5000 ON (top_albums.artist = top5000.artist AND top_albums.year ";
-        query += "= top5000.year) WHERE ?"; // (top_albums.artist = ? AND top5000.artist = ?) ORDER BY top_albums.year, top_albums.position";
-        //connection.query(answer) {};
-      });
+      .then((answer) => {});
   });
   employeeinq();
 }
+//ASK HOW TO DELETE THIS????
 
 //connection.query( "DELETE FROM employee WHERE ?",
 //     {
-//       flavor: "strawberry"
+//       first_name: "answer.employee"
+//        last_name: " answer.employee"
+//
 //     },
 //     function(err, res) {
 //       if (err) throw err;
@@ -210,7 +269,15 @@ function removeEmployee() {
 //===============================
 function employeeManager() {
   connection.query(
-    "SELECT * FROM employee Left Join role on employee.id=role.id",
+    `SELECT department.name AS department, employee.first_name, employee.last_name, role.title, role.salary, manager.id, CONCAT(manager.first_name, " ",manager.last_name) AS manager
+    FROM employee_tracker.employee
+    LEFT JOIN role
+    ON employee.role_id=role.id
+    LEFT JOIN department
+    ON role.department_id=department.id 
+    LEFT JOIN employee manager  
+    ON employee.manager_id=manager.id
+    ORDER BY department.name`,
     function (err, results) {
       if (err) throw err;
       inquirer
@@ -237,8 +304,8 @@ function employeeManager() {
             choices: function () {
               var choiceArray = [];
               for (var i = 0; i < results.length; i++) {
-                if (results[i].manager_id !== null) {
-                  choiceArray.push(results[i].manager_id);
+                if (results[i].id !== null) {
+                  choiceArray.push(results[i].id);
                 }
               }
               return choiceArray;
@@ -251,8 +318,8 @@ function employeeManager() {
         });
     }
   );
+  employeeinq();
 }
-
 //
 //   var query = connection.query(
 //     "UPDATE `employee_tracker`.`employee` SET `manager_id` = 'potatoman' WHERE (`id` = '8');",
