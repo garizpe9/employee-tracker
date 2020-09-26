@@ -1,7 +1,3 @@
-//SEE FUNCTION NOTES FOR QUESTIONS ON ENTERING INFORMATION FROM FK & DUPLICATE VALUE REMOVAL
-//ENSURE ALL FUNCTIONS HAVE EMPLOYEEINQ
-//UPDATE EMPLOYEEINQ TO HAVE AN EXIT FEATURE
-
 // Minimum Requirements
 // Functional application.
 // GitHub repository with a unique name and a README describing the project.
@@ -9,7 +5,6 @@
 // Bonus
 // The command-line application should allow users to:
 // Update employee managers
-// Delete departments, roles, and
 
 const mysql = require("mysql");
 const inquirer = require("inquirer");
@@ -37,15 +32,14 @@ function employeeinq() {
       choices: [
         "View Departments",
         "Add a Department",
-        "Remove a Department", //Function Needed
+        "Remove a Department",
         "View Roles",
         "Add a Role",
-        "Remove a Role", //Function Needed
+        "Remove a Role",
         "View All Employees",
         "Add Employee",
         "Remove Employee",
         "View All Employees by Department",
-
         "Update Employee Manager",
       ],
     })
@@ -81,10 +75,12 @@ function employeeinq() {
         case "Remove a Department":
           removeDept();
           break;
+        case "Remove a Role":
+          removeRole();
+          break;
       }
     });
 }
-
 //Add Departments
 //=================================
 function addDepartment() {
@@ -237,7 +233,6 @@ function departmentSearch() {
     }
   );
 }
-
 //Add Employee //HOW TO REMOVE DUPLICATE VALUES ?
 //======================
 function addEmployee() {
@@ -377,6 +372,8 @@ function employeeManager() {
       });
   });
 }
+//Remove Dept
+//====================
 function removeDept() {
   connection.query("SELECT * FROM department", function (err, results) {
     if (err) throw err;
@@ -402,6 +399,40 @@ function removeDept() {
           function (err, res) {
             if (err) throw err;
             console.log("Department Removed\n");
+            employeeinq();
+          }
+        );
+      });
+  });
+}
+
+//Remove Role
+//====================
+function removeRole() {
+  connection.query("SELECT * FROM role", function (err, results) {
+    if (err) throw err;
+    inquirer
+      .prompt([
+        {
+          name: "role",
+          type: "rawlist",
+          choices: function () {
+            var choiceArray = [];
+            for (var i = 0; i < results.length; i++) {
+              choiceArray.push(results[i].title);
+            }
+            return choiceArray;
+          },
+          message: "Select a Role to remove",
+        },
+      ])
+      .then((answer) => {
+        connection.query(
+          "Delete from role where title = ?",
+          [answer.role],
+          function (err, res) {
+            if (err) throw err;
+            console.log("Role Removed\n");
             employeeinq();
           }
         );
