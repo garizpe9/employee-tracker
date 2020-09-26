@@ -9,8 +9,7 @@
 // Bonus
 // The command-line application should allow users to:
 // Update employee managers
-// View employees by manager
-// Delete departments, roles, and employees
+// Delete departments, roles, and
 
 const mysql = require("mysql");
 const inquirer = require("inquirer");
@@ -36,14 +35,17 @@ function employeeinq() {
       type: "rawlist",
       message: "What would you like to do?",
       choices: [
-        "Add a Department",
-        "Add a Role",
         "View Departments",
+        "Add a Department",
+        "Remove a Department", //Function Needed
         "View Roles",
+        "Add a Role",
+        "Remove a Role", //Function Needed
         "View All Employees",
-        "View All Employees by department",
         "Add Employee",
         "Remove Employee",
+        "View All Employees by Department",
+
         "Update Employee Manager",
       ],
     })
@@ -64,7 +66,7 @@ function employeeinq() {
         case "View All Employees":
           employeeSearch();
           break;
-        case "View All Employees by department":
+        case "View All Employees by Department":
           departmentSearch();
           break;
         case "Add Employee":
@@ -161,7 +163,7 @@ function addRole() {
             },
             function (err) {
               if (err) throw err;
-              console.log("Role was successfully added");
+              console.log("Role was successfully added\n");
               employeeinq();
             }
           );
@@ -169,7 +171,6 @@ function addRole() {
     }
   );
 }
-
 //View all Roles
 //=================================
 function viewRoles() {
@@ -182,7 +183,6 @@ function viewRoles() {
     }
   );
 }
-
 //View all Departments
 //=================================
 function viewDepartments() {
@@ -237,85 +237,53 @@ function departmentSearch() {
 //Add Employee //HOW TO REMOVE DUPLICATE VALUES ?
 //======================
 function addEmployee() {
-  var managerchoiceArray = [];
-  connection.query(
-    `SELECT employee.first_name, employee.last_name, role.id AS role_id, role.title, role.salary,  manager.id, CONCAT(manager.first_name, " ",manager.last_name) AS manager
-    FROM employee_tracker.employee
-    LEFT JOIN role
-    ON employee.role_id=role.id
-    LEFT JOIN department
-    ON role.department_id=department.id 
-    LEFT JOIN employee manager  
-    ON employee.manager_id=manager.id`,
-    function (err, results) {
-      if (err) throw err;
-      inquirer
-        .prompt([
-          {
-            type: "input",
-            name: "firstname",
-            message: "What is the employee's First Name?",
-          },
-          {
-            type: "input",
-            name: "lastname",
-            message: "What is the employee's Last Name?",
-          },
-          {
-            type: "rawlist",
-            name: "role",
-            choices: function () {
-              var choiceArray = [];
-              for (var i = 0; i < results.length; i++) {
-                if (results[i].title !== null) {
-                  choiceArray.push(
-                    results[i].role_id + ". " + results[i].title
-                  );
-                }
+  connection.query(`SELECT * FROM role;`, function (err, results) {
+    if (err) throw err;
+    inquirer
+      .prompt([
+        {
+          type: "input",
+          name: "firstname",
+          message: "What is the employee's First Name?",
+        },
+        {
+          type: "input",
+          name: "lastname",
+          message: "What is the employee's Last Name?",
+        },
+        {
+          type: "rawlist",
+          name: "role",
+          choices: function () {
+            var choiceArray = [];
+            for (var i = 0; i < results.length; i++) {
+              if (results[i].title !== null) {
+                choiceArray.push(results[i].id + ". " + results[i].title);
               }
-              return choiceArray;
-            },
-            message: "What is the employee's role?",
-          },
-          {
-            name: "manager",
-            type: "rawlist",
-            choices: function () {
-              for (var i = 0; i < results.length; i++) {
-                if (results[i].id !== null) {
-                  managerchoiceArray.push(
-                    results[i].id + ". " + results[i].manager
-                  );
-                }
-              }
-              return managerchoiceArray;
-            },
-            message: "What is the employee's manager?",
-          },
-        ])
-        .then((answer) => {
-          console.log("Adding Employee...\n");
-          var manageranswer = answer.manager;
-          var splitmanager = manageranswer.split(". ");
-          var roleanswer = answer.role;
-          var splitrole = roleanswer.split(". ");
-          connection.query(
-            "INSERT INTO employee SET ?",
-            {
-              first_name: answer.firstname,
-              last_name: answer.lastname,
-              role_id: splitrole[0],
-              manager_id: splitmanager[0],
-            },
-            function (err) {
-              if (err) throw err;
-              console.log("Employee was successfully added!");
-              employeeinq();
             }
-          );
-        });
-    }
-  );
+            return choiceArray;
+          },
+          message: "What is the employee's role?",
+        },
+      ])
+      .then((answer) => {
+        var roleanswer = answer.role;
+        var splitrole = roleanswer.split(". ");
+        connection.query(
+          "INSERT INTO employee SET ?",
+          {
+            first_name: answer.firstname,
+            last_name: answer.lastname,
+            role_id: splitrole[0],
+          },
+          function (err) {
+            if (err) throw err;
+            console.log("Employee was successfully added!\n");
+            employeeinq();
+          }
+        );
+      });
+  });
 }
 //Remove Employee
 //=======================
@@ -339,26 +307,22 @@ function removeEmployee() {
           message: "Select Employee to remove",
         },
       ])
-      .then((answer) => {});
-  });
-  employeeinq();
-}
-//ASK HOW TO DELETE THIS????
+      .then((answer) => {
+        var employee = `${answer.employee}`;
+        var splitemployee = employee.split(" ");
 
-//connection.query( "DELETE FROM employee WHERE ?",
-//     {
-//       first_name: "answer.employee"
-//        last_name: " answer.employee"
-//
-//     },
-//     function(err, res) {
-//       if (err) throw err;
-//       console.log(res.affectedRows + " products deleted!\n");
-//       // Call readProducts AFTER the DELETE completes
-//       readProducts();
-//     }
-//   );
-// }
+        connection.query(
+          "Delete from Employee where CONCAT (first_name, ' ', last_name) = ?",
+          [answer.employee],
+          function (err, res) {
+            if (err) throw err;
+            console.log("Employee Removed\n");
+            employeeinq();
+          }
+        );
+      });
+  });
+}
 
 //Update Manager
 //===============================
