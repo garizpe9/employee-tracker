@@ -6,7 +6,6 @@
 // Functional application.
 // GitHub repository with a unique name and a README describing the project.
 // The command-line application should allow users to:
-// employees
 // View departments, roles, employees
 // Update employee roles
 // Bonus
@@ -14,7 +13,6 @@
 // Update employee managers
 // View employees by manager
 // Delete departments, roles, and employees
-// View the total utilized budget of a department -- ie the combined salaries of all employees in that department
 
 const mysql = require("mysql");
 const inquirer = require("inquirer");
@@ -175,6 +173,23 @@ function addRole() {
   );
 }
 
+//View all Roles
+//=================================
+function viewRoles() {
+  connection.query(
+    `SELECT title as Roles FROM employee_tracker.role;`,
+    function (err, res) {
+      if (err) throw err;
+      console.table(res);
+      employeeinq();
+    }
+  );
+}
+
+//View all Departments
+//=================================
+function viewDepartments() {}
+
 //View all Employees
 //=================================
 function employeeSearch() {
@@ -218,7 +233,6 @@ function departmentSearch() {
 //======================
 function addEmployee() {
   var managerchoiceArray = [];
-  var managerchoiceid = [];
   connection.query(
     `SELECT department.name AS department, employee.first_name, employee.last_name, role.title, role.salary,  manager.id, CONCAT(manager.first_name, " ",manager.last_name) AS manager
     FROM employee_tracker.employee
@@ -278,7 +292,7 @@ function addEmployee() {
           var manageranswer = answer.manager;
           var splitmanager = manageranswer.split(". ");
           connection.query(
-            "INSERT INTO employee SET?",
+            "INSERT INTO employee SET ?",
             {
               first_name: answer.firstname,
               last_name: answer.lastname,
