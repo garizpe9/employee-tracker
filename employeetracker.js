@@ -6,8 +6,6 @@
 // Functional application.
 // GitHub repository with a unique name and a README describing the project.
 // The command-line application should allow users to:
-// View departments, roles, employees
-// Update employee roles
 // Bonus
 // The command-line application should allow users to:
 // Update employee managers
@@ -113,7 +111,6 @@ function addDepartment() {
       });
   });
 }
-
 //Add Role
 //=================================
 function addRole() {
@@ -188,8 +185,16 @@ function viewRoles() {
 
 //View all Departments
 //=================================
-function viewDepartments() {}
-
+function viewDepartments() {
+  connection.query(
+    `SELECT name as Departments FROM employee_tracker.department;`,
+    function (err, res) {
+      if (err) throw err;
+      console.table(res);
+      employeeinq();
+    }
+  );
+}
 //View all Employees
 //=================================
 function employeeSearch() {
