@@ -1,11 +1,3 @@
-// Minimum Requirements
-// Functional application.
-// GitHub repository with a unique name and a README describing the project.
-// The command-line application should allow users to:
-// Bonus
-// The command-line application should allow users to:
-// Update employee managers
-
 const mysql = require("mysql");
 const inquirer = require("inquirer");
 const consoleTable = require("console.table");
@@ -40,7 +32,6 @@ function employeeinq() {
         "Add Employee",
         "Remove Employee",
         "View All Employees by Department",
-        "Update Employee Manager",
       ],
     })
     .then(function (answer) {
@@ -68,9 +59,6 @@ function employeeinq() {
           break;
         case "Remove Employee":
           removeEmployee();
-          break;
-        case "Update Employee Manager":
-          employeeManager();
           break;
         case "Remove a Department":
           removeDept();
@@ -313,59 +301,6 @@ function removeEmployee() {
           function (err, res) {
             if (err) throw err;
             console.log("Employee Removed\n");
-            employeeinq();
-          }
-        );
-      });
-  });
-}
-//Update Manager
-//===============================
-function employeeManager() {
-  connection.query(`SELECT * FROM employee`, function (err, results) {
-    if (err) throw err;
-    inquirer
-      .prompt([
-        {
-          name: "employeeUpdate",
-          type: "rawlist",
-          choices: function () {
-            var choiceArray = [];
-            for (var i = 0; i < results.length; i++) {
-              if (results[i].first_name + " " + results[i].last_name !== null) {
-                choiceArray.push(
-                  results[i].first_name + " " + results[i].last_name
-                );
-              }
-            }
-            return choiceArray;
-          },
-          message: "Select Employee",
-        },
-        {
-          name: "managerUpdate",
-          type: "rawlist",
-          choices: function () {
-            var choiceArray = [];
-            for (var i = 0; i < results.length; i++) {
-              if (results[i].first_name + " " + results[i].last_name !== null) {
-                choiceArray.push(
-                  results[i].first_name + " " + results[i].last_name
-                );
-              }
-            }
-            return choiceArray;
-          },
-          message: "Select Manager",
-        },
-      ])
-      .then((answer) => {
-        connection.query(
-          "Update from Employee SET `manager_id` = ? where CONCAT (first_name, ' ', last_name) = ?",
-          [answer.managerUpdate, answer.employee],
-          function (err, res) {
-            if (err) throw err;
-            console.log("Employee Manager Updated!\n");
             employeeinq();
           }
         );
