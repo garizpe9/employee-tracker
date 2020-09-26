@@ -132,9 +132,12 @@ function addRole() {
                     results[i].department_id + "." + " " + results[i].name
                   );
                 }
+                var unique = new Set(choiceArray);
+                var backtoarr = [...unique];
               }
-              return choiceArray;
+              return backtoarr;
             },
+
             message: "What Department?",
           },
         ])
@@ -340,7 +343,6 @@ function removeDept() {
       });
   });
 }
-
 //Remove Role
 //====================
 function removeRole() {
