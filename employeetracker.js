@@ -6,7 +6,7 @@
 // Functional application.
 // GitHub repository with a unique name and a README describing the project.
 // The command-line application should allow users to:
-// Add roles, employees
+// employees
 // View departments, roles, employees
 // Update employee roles
 // Bonus
@@ -101,12 +101,19 @@ function addDepartment() {
         },
       ])
       .then((answer) => {
-        connection.query("INSERT INTO department SET?", {
-          name: answer.addDept,
-        });
+        connection.query(
+          "INSERT INTO department SET?",
+          {
+            name: answer.addDept,
+          },
+          function (err) {
+            if (err) throw err;
+            console.log("Department was successfully added");
+            employeeinq();
+          }
+        );
       });
   });
-  employeeinq();
 }
 
 //Add Role
@@ -144,21 +151,28 @@ function addRole() {
               }
               return choiceArray;
             },
-            message: "Roles' Department?",
+            message: "What Department?",
           },
         ])
         .then((answer) => {
           var dept = answer.departmentid;
           var splitdept = dept.split("");
-          connection.query("INSERT INTO role SET?", {
-            title: answer.addrole,
-            salary: answer.salary,
-            department_id: splitdept[0],
-          });
+          connection.query(
+            "INSERT INTO role SET?",
+            {
+              title: answer.addrole,
+              salary: answer.salary,
+              department_id: splitdept[0],
+            },
+            function (err) {
+              if (err) throw err;
+              console.log("Role was successfully added");
+              employeeinq();
+            }
+          );
         });
     }
   );
-  employeeinq();
 }
 
 //View all Employees
@@ -176,9 +190,9 @@ function employeeSearch() {
     function (err, res) {
       if (err) throw err;
       console.table(res);
+      employeeinq();
     }
   );
-  employeeinq();
 }
 //View all Employees by Department
 //=================================
@@ -249,7 +263,9 @@ function addEmployee() {
             choices: function () {
               for (var i = 0; i < results.length; i++) {
                 if (results[i].id !== null) {
-                  managerchoiceArray.push(results[i].manager);
+                  managerchoiceArray.push(
+                    results[i].id + ". " + results[i].manager
+                  );
                 }
               }
               return managerchoiceArray;
@@ -260,17 +276,21 @@ function addEmployee() {
         .then((answer) => {
           console.log("Adding Employee...\n");
           var manageranswer = answer.manager;
-          var splitmanager = manageranswer.split(" ");
-          console.log(splitmanager);
-          // connection.query("INSERT INTO employee SET?", {
-          //   first_name: answer.firstname,
-          //   last_name: answer.lastname,
-          //   role_id: answer.role,
-          //   manager_id:
-          //     managerchoiceid[managerchoiceArray.indexof(answer.manager)], ///this cannot be right since it is using an id for employee how to pull?
-          //  connection.query() , {
-
-          //});
+          var splitmanager = manageranswer.split(". ");
+          connection.query(
+            "INSERT INTO employee SET?",
+            {
+              first_name: answer.firstname,
+              last_name: answer.lastname,
+              role_id: answer.role,
+              manager_id: splitmanager[0],
+            },
+            function (err) {
+              if (err) throw err;
+              console.log("Role was successfully added");
+              employeeinq();
+            }
+          );
         });
     }
   );
