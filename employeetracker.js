@@ -78,6 +78,9 @@ function employeeinq() {
         case "Update Employee Manager":
           employeeManager();
           break;
+        case "Remove a Department":
+          removeDept();
+          break;
       }
     });
 }
@@ -234,6 +237,7 @@ function departmentSearch() {
     }
   );
 }
+
 //Add Employee //HOW TO REMOVE DUPLICATE VALUES ?
 //======================
 function addEmployee() {
@@ -308,9 +312,6 @@ function removeEmployee() {
         },
       ])
       .then((answer) => {
-        var employee = `${answer.employee}`;
-        var splitemployee = employee.split(" ");
-
         connection.query(
           "Delete from Employee where CONCAT (first_name, ' ', last_name) = ?",
           [answer.employee],
@@ -323,80 +324,87 @@ function removeEmployee() {
       });
   });
 }
-
 //Update Manager
 //===============================
 function employeeManager() {
-  connection.query(
-    `SELECT department.name AS department, employee.first_name, employee.last_name, role.title, role.salary, manager.id, CONCAT(manager.first_name, " ",manager.last_name) AS manager
-    FROM employee_tracker.employee
-    LEFT JOIN role
-    ON employee.role_id=role.id
-    LEFT JOIN department
-    ON role.department_id=department.id 
-    LEFT JOIN employee manager  
-    ON employee.manager_id=manager.id
-    ORDER BY department.name`,
-    function (err, results) {
-      if (err) throw err;
-      inquirer
-        .prompt([
-          {
-            name: "employeeUpdate",
-            type: "rawlist",
-            choices: function () {
-              var choiceArray = [];
-              for (var i = 0; i < results.length; i++) {
-                if (results[i].name !== null) {
-                  choiceArray.push(
-                    results[i].first_name + " " + results[i].last_name
-                  );
-                }
+  connection.query(`SELECT * FROM employee`, function (err, results) {
+    if (err) throw err;
+    inquirer
+      .prompt([
+        {
+          name: "employeeUpdate",
+          type: "rawlist",
+          choices: function () {
+            var choiceArray = [];
+            for (var i = 0; i < results.length; i++) {
+              if (results[i].first_name + " " + results[i].last_name !== null) {
+                choiceArray.push(
+                  results[i].first_name + " " + results[i].last_name
+                );
               }
-              return choiceArray;
-            },
-            message: "Select Employee",
+            }
+            return choiceArray;
           },
-          {
-            name: "managerUpdate",
-            type: "rawlist",
-            choices: function () {
-              var choiceArray = [];
-              for (var i = 0; i < results.length; i++) {
-                if (results[i].id !== null) {
-                  choiceArray.push(results[i].id);
-                }
+          message: "Select Employee",
+        },
+        {
+          name: "managerUpdate",
+          type: "rawlist",
+          choices: function () {
+            var choiceArray = [];
+            for (var i = 0; i < results.length; i++) {
+              if (results[i].first_name + " " + results[i].last_name !== null) {
+                choiceArray.push(
+                  results[i].first_name + " " + results[i].last_name
+                );
               }
-              return choiceArray;
-            },
-            message: "Select Manager",
+            }
+            return choiceArray;
           },
-        ])
-        .then((answer) => {
-          console.log("Adding Employee...\n");
-        });
-    }
-  );
-  employeeinq();
+          message: "Select Manager",
+        },
+      ])
+      .then((answer) => {
+        connection.query(
+          "Update from Employee SET `manager_id` = ? where CONCAT (first_name, ' ', last_name) = ?",
+          [answer.managerUpdate, answer.employee],
+          function (err, res) {
+            if (err) throw err;
+            console.log("Employee Manager Updated!\n");
+            employeeinq();
+          }
+        );
+      });
+  });
 }
-//
-//   var query = connection.query(
-//     "UPDATE `employee_tracker`.`employee` SET `manager_id` = 'potatoman' WHERE (`id` = '8');",
-//     [
-//       {
-//         quantity: 100
-//       },
-//       {
-//         flavor: "Rocky Road"
-//       }
-//     ],
-// function(err, res) {
-//   if (err) throw err;
-//   console.log(res.affectedRows + " products updated!\n");
-//       // Call deleteProduct AFTER the UPDATE completes
-//       deleteProduct();
-//     }
-//   );
-
-//   // logs the actual query being run
-//   console.log(query.sql);
+function removeDept() {
+  connection.query("SELECT * FROM department", function (err, results) {
+    if (err) throw err;
+    inquirer
+      .prompt([
+        {
+          name: "department",
+          type: "rawlist",
+          choices: function () {
+            var choiceArray = [];
+            for (var i = 0; i < results.length; i++) {
+              choiceArray.push(results[i].name);
+            }
+            return choiceArray;
+          },
+          message: "Select a Department to remove",
+        },
+      ])
+      .then((answer) => {
+        connection.query(
+          "Delete from Department where name = ?",
+          [answer.department],
+          function (err, res) {
+            if (err) throw err;
+            console.log("Department Removed\n");
+            employeeinq();
+          }
+        );
+      });
+  });
+}
