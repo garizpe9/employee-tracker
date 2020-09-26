@@ -239,15 +239,14 @@ function departmentSearch() {
 function addEmployee() {
   var managerchoiceArray = [];
   connection.query(
-    `SELECT department.name AS department, employee.first_name, employee.last_name, role.title, role.salary,  manager.id, CONCAT(manager.first_name, " ",manager.last_name) AS manager
+    `SELECT employee.first_name, employee.last_name, role.id AS role_id, role.title, role.salary,  manager.id, CONCAT(manager.first_name, " ",manager.last_name) AS manager
     FROM employee_tracker.employee
     LEFT JOIN role
     ON employee.role_id=role.id
     LEFT JOIN department
     ON role.department_id=department.id 
     LEFT JOIN employee manager  
-    ON employee.manager_id=manager.id
-    ORDER BY department.name`,
+    ON employee.manager_id=manager.id`,
     function (err, results) {
       if (err) throw err;
       inquirer
@@ -269,7 +268,9 @@ function addEmployee() {
               var choiceArray = [];
               for (var i = 0; i < results.length; i++) {
                 if (results[i].title !== null) {
-                  choiceArray.push(results[i].title);
+                  choiceArray.push(
+                    results[i].role_id + ". " + results[i].title
+                  );
                 }
               }
               return choiceArray;
@@ -296,17 +297,19 @@ function addEmployee() {
           console.log("Adding Employee...\n");
           var manageranswer = answer.manager;
           var splitmanager = manageranswer.split(". ");
+          var roleanswer = answer.role;
+          var splitrole = roleanswer.split(". ");
           connection.query(
             "INSERT INTO employee SET ?",
             {
               first_name: answer.firstname,
               last_name: answer.lastname,
-              role_id: answer.role,
+              role_id: splitrole[0],
               manager_id: splitmanager[0],
             },
             function (err) {
               if (err) throw err;
-              console.log("Role was successfully added");
+              console.log("Employee was successfully added!");
               employeeinq();
             }
           );
